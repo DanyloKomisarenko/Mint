@@ -14,7 +14,7 @@ public class PacketDatabase
     {
         this.root = JsonUtil.ReadFromFile<Root>(rootfile);
 
-        logger.Info("PacketDatabase", $"Searching for protocols . . .");
+        logger.Event($"Searching for protocols . . .");
         var rootdir = Directory.GetParent(rootfile);
         if (rootdir is null) throw new DirectoryNotFoundException();
         if (root.versions is null) throw new NullReferenceException($"Root json is missing 'versions' array");
@@ -31,7 +31,7 @@ public class PacketDatabase
                 logger.Debug("PacketDatabase", $"'{ver.identifier}/{ver.protocolVersion}' is skipped because '{protocolfile} could not be found'");
             }
         }
-        logger.Info("PacketDatabase", $"{protocols.Count} protocol(s) were found");
+        logger.Event($"{protocols.Count} protocol(s) were found");
     }
 
     public Protocol GetLatest()

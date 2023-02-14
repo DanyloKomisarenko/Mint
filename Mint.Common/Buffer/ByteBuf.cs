@@ -63,24 +63,24 @@ public class ByteBuf : AbstractByteBuf
 
     /*
      * <summary>
-     * Reads four bytes and converts them into a
-     * 32-bit integer and then a boolean.
+     * Reads one byte and converts it into a
+     * boolean.
      * </summary>
      */
     public bool ReadBool()
     {
-        return ReadInt() == 1;
+        return ReadBool() == 0x01;
     }
 
     /*
      * <summary>
-     * Converts a boolean into 32-bit integer into four bytes
-     * and writes them to the buffer.
+     * Converts a boolean one byte
+     * and writes it to the buffer.
      * </summary>
      */
     public void WriteBool(bool o)
     {
-        WriteInt(o ? 1 : 0);
+        WriteBool(o ? 0x01 : 0x00);
     }
 
     /*
