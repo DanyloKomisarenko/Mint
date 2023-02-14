@@ -1,14 +1,45 @@
 ﻿{
   "packets": [
     {
-      "id": "",
-      "name": "",
-      "bound": "",
-      "state": "",
+      "id": 0,
+      "name": "C00StatusRequest",
+      "bound": "SERVER",
+      "state": "STATUS"
+    },
+    {
+      "id": 0,
+      "name": "C00StatusResponse",
+      "bound": "CLIENT",
+      "state": "STATUS",
       "parameters": [
         {
-          "name": "",
-          "type": ""
+          "name": "JSON Response",
+          "type": "STRING"
+        }
+      ]
+    },
+
+    {
+      "id": 1,
+      "name": "C01PingRequest",
+      "bound": "SERVER",
+      "state": "STATUS",
+      "parameters": [
+        {
+          "name": "Payload",
+          "type": "LONG"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "name": "C01PingResponse",
+      "bound": "CLIENT",
+      "state": "STATUS",
+      "parameters": [
+        {
+          "name": "Payload",
+          "type": "LONG"
         }
       ]
     }
