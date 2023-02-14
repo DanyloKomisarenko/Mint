@@ -4,17 +4,20 @@
       "id": 0,
       "name": "C00StatusRequest",
       "bound": "SERVER",
-      "state": "STATUS"
+      "state": "STATUS",
+      "desc": "Sent by the client to query the server lore."
     },
     {
       "id": 0,
       "name": "C00StatusResponse",
       "bound": "CLIENT",
       "state": "STATUS",
+      "desc": "Sent by the server in response to a client query for the server lore.",
       "parameters": [
         {
           "name": "JSON Response",
-          "type": "STRING"
+          "type": "STRING",
+          "desc": "The server lore encoded in json."
         }
       ]
     },
@@ -24,6 +27,7 @@
       "name": "C01PingRequest",
       "bound": "SERVER",
       "state": "STATUS",
+      "desc": "Sent by the client to query the ping to the server.",
       "parameters": [
         {
           "name": "Payload",
@@ -36,6 +40,7 @@
       "name": "C01PingResponse",
       "bound": "CLIENT",
       "state": "STATUS",
+      "desc": "Sent by the server as a response to a query for the ping by the client.",
       "parameters": [
         {
           "name": "Payload",

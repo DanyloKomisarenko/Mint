@@ -73,6 +73,7 @@ public class PacketDatabase
             public string? name;
             public string? bound;
             public string? state;
+            public string desc = "Packet is not documented yet.";
             public Parameter[]? parameters;
         }
 
@@ -80,6 +81,7 @@ public class PacketDatabase
         {
             public string? name;
             public string? type;
+            public string desc = "Parameter is not documented yet.";
         }
     }
 }
