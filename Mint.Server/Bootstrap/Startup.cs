@@ -5,7 +5,6 @@ using Mint.Server.Config;
 using Mint.Server;
 using Mint.Common;
 using Mint.Protocol.Database;
-using Mint.Server.Command;
 
 IHost host = Host.CreateDefaultBuilder(args)
         .ConfigureServices((_, services) =>

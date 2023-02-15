@@ -1,7 +1,6 @@
 ﻿using Mint.Common;
 using Mint.Common.Config;
 using Mint.Protocol.Listener;
-using Mint.Server.Command;
 
 namespace Mint.Server;
 
