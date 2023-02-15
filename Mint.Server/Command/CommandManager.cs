@@ -1,18 +1,23 @@
 ﻿using Mint.Common;
+using Mint.Protocol.Listener;
 using Mint.Server.Command.Commands;
 
 namespace Mint.Server.Command;
 
 public class CommandManager
 {
-    private readonly Logger logger;
+    public readonly PacketListener Listener;
+    public readonly Logger Logger;
+
     private readonly List<ICommand> commands = new();
 
-    public CommandManager(Logger logger)
+    public CommandManager(PacketListener listener, Logger logger)
     {
-        this.logger = logger;
+        this.Listener = listener;
+        this.Logger = logger;
 
         RegisterCommand(new HelpCommand());
+        RegisterCommand(new QuitCommand());
     }
 
     public void Handle(string? cmd)
@@ -28,7 +33,7 @@ public class CommandManager
                 command.Handle(this, parameters);
             } else
             {
-                logger.Error($"Unknown command '{pars[0]}'");
+                Logger.Error($"Unknown command '{pars[0]}'");
             }
         }
     }

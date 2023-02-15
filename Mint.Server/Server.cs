@@ -1,6 +1,5 @@
 ﻿using Mint.Common;
 using Mint.Common.Config;
-using Mint.Protocol.Database;
 using Mint.Protocol.Listener;
 using Mint.Server.Command;
 
@@ -12,6 +11,8 @@ public class Server
     private readonly Logger logger;
     private readonly PacketListener listener;
     private readonly CommandManager commands;
+
+    private readonly CancellationTokenSource cancellation = new();
 
     public Server(IConfiguration config, Logger logger, PacketListener listener, CommandManager commands)
     {
@@ -32,10 +33,14 @@ public class Server
             {
                 Console.Write("> ");
                 string? cmd = Console.ReadLine();
-                commands.Handle(cmd);
+                if (listener.IsRunning())
+                {
+                    commands.Handle(cmd);
+                }
             }
-            logger.Info("Stopped server");
-        } catch(Exception e)
+            logger.Info("Server Stopped");
+        }
+        catch (Exception e)
         {
             logger.Fatal($"{e.Message}: {e}");
         }
