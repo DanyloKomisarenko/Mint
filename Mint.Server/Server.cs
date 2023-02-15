@@ -10,16 +10,14 @@ public class Server
     private readonly IConfiguration config;
     private readonly Logger logger;
     private readonly PacketListener listener;
-    private readonly CommandManager commands;
 
     private readonly CancellationTokenSource cancellation = new();
 
-    public Server(IConfiguration config, Logger logger, PacketListener listener, CommandManager commands)
+    public Server(IConfiguration config, Logger logger, PacketListener listener)
     {
         this.config = config;
         this.logger = logger;
         this.listener = listener;
-        this.commands = commands;
     }
 
     public void Run()
@@ -29,15 +27,7 @@ public class Server
             logger.Info("Starting server . . .");
             listener.Start();
             listener.Listen();
-            while (listener.IsRunning())
-            {
-                Console.Write("> ");
-                string? cmd = Console.ReadLine();
-                if (listener.IsRunning())
-                {
-                    commands.Handle(cmd);
-                }
-            }
+            while (listener.IsRunning()) { }
             logger.Info("Server Stopped");
         }
         catch (Exception e)

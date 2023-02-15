@@ -44,11 +44,12 @@ public class PacketDatabase
             var protocol = GetProtocolByVersion(pv);
             if (protocol is not null)
             {
-                return protocol.packets.Where<Protocol.Packet>((packet) =>
+                var found = protocol.packets.Where<Protocol.Packet>((packet) =>
                     packet.id.Equals(id) &&
                     packet.bound is not null && Enum.Parse(typeof(Bound), packet.bound).Equals(bound) &&
                     packet.state is not null && Enum.Parse(typeof(State), packet.state).Equals(state)
-                ).First();
+                );
+                if (found.Any()) return found.First();
             } else
             {
                 throw new NullReferenceException($"Failed to find protocol '{pv}'");
