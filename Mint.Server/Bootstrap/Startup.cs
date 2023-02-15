@@ -16,8 +16,7 @@ IHost host = Host.CreateDefaultBuilder(args)
 
             services.AddSingleton<Server>()
                 .AddSingleton<PacketListener>()
-                .AddSingleton<PacketDatabase>()
-                .AddSingleton<CommandManager>();
+                .AddSingleton<PacketDatabase>();
         })
         .Build();
 
