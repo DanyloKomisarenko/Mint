@@ -14,7 +14,7 @@ public class PacketDatabase
     {
         this.root = JsonUtil.ReadFromFile<Root>(rootfile);
 
-        logger.Event($"Searching for protocols . . .");
+        logger.StartEvent($"Searching for protocols . . .");
         var rootdir = Directory.GetParent(rootfile);
         if (rootdir is null) throw new DirectoryNotFoundException();
         if (root.versions is null) throw new NullReferenceException($"Root json is missing 'versions' array");
@@ -24,14 +24,24 @@ public class PacketDatabase
             if (File.Exists(protocolfile))
             {
                 protocols[ver] = JsonUtil.ReadFromFile<Protocol>(protocolfile);
-                logger.Debug("PacketDatabase", $"'{ver.identifier}' was found and registered");
+                logger.Debug($"'{ver.identifier}' was found and registered");
             }
             else
             {
-                logger.Debug("PacketDatabase", $"'{ver.identifier}/{ver.protocolVersion}' is skipped because '{protocolfile} could not be found'");
+                logger.Debug($"'{ver.identifier}/{ver.protocolVersion}' is skipped because '{protocolfile} could not be found'");
             }
         }
-        logger.Event($"{protocols.Count} protocol(s) were found");
+        logger.EndEvent($"{protocols.Count} protocol(s) were found");
+    }
+
+    public Protocol.Packet GetPacket(int id, string[] protocolversions, Bound bound, State state)
+    {
+        foreach (string pv in protocolversions)
+        {
+            GetProtocolByVersion(pv).packets.First<Protocol.Packet>();
+        }
+
+        return null;
     }
 
     public Protocol GetLatest()
@@ -69,7 +79,7 @@ public class PacketDatabase
 
         public record Packet
         {
-            public string? id;
+            public int? id;
             public string? name;
             public string? bound;
             public string? state;

@@ -9,9 +9,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mint.Protocol", "Mint.Proto
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0EDF2DE3-755A-4E00-96DC-C37914B9C18D}"
 	ProjectSection(SolutionItems) = preProject
-		..\MintOld\.gitignore = ..\MintOld\.gitignore
-		..\MintOld\LICENSE = ..\MintOld\LICENSE
-		..\MintOld\README.md = ..\MintOld\README.md
+		.gitignore = .gitignore
+		LICENSE = LICENSE
+		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mint.Server", "Mint.Server\Mint.Server.csproj", "{7D501A3E-D456-4EED-823F-9CC3B2CD927C}"

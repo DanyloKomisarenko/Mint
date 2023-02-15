@@ -69,7 +69,7 @@ public class ByteBuf : AbstractByteBuf
      */
     public bool ReadBool()
     {
-        return ReadBool() == 0x01;
+        return ReadByte() == 0x01;
     }
 
     /*
@@ -80,7 +80,7 @@ public class ByteBuf : AbstractByteBuf
      */
     public void WriteBool(bool o)
     {
-        WriteBool(o ? 0x01 : 0x00);
+        WriteByte((byte) (o ? 0x01 : 0x00));
     }
 
     /*
