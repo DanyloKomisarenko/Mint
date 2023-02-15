@@ -1,21 +1,22 @@
 ﻿using Mint.Common;
+using Mint.Common.Config;
 using Mint.Common.Util;
 
 namespace Mint.Protocol.Database;
 
 public class PacketDatabase
 {
-    private readonly Logger logger = new();
-
+    private readonly IConfiguration config;
+    private readonly Logger logger;
     private readonly Root root;
     private readonly Dictionary<ProtocolInfo, Protocol> protocols = new();
 
-    public PacketDatabase(string rootfile)
+    public PacketDatabase(IConfiguration config, Logger logger)
     {
-        this.root = JsonUtil.ReadFromFile<Root>(rootfile);
+        this.root = JsonUtil.ReadFromFile<Root>(config.GetPacketRootFile());
 
-        logger.StartEvent($"Searching for protocols . . .");
-        var rootdir = Directory.GetParent(rootfile);
+        logger.Info($"Searching for protocols . . .");
+        var rootdir = Directory.GetParent(config.GetPacketRootFile());
         if (rootdir is null) throw new DirectoryNotFoundException();
         if (root.versions is null) throw new NullReferenceException($"Root json is missing 'versions' array");
         foreach (ProtocolInfo ver in root.versions)
@@ -31,14 +32,27 @@ public class PacketDatabase
                 logger.Debug($"'{ver.identifier}/{ver.protocolVersion}' is skipped because '{protocolfile} could not be found'");
             }
         }
-        logger.EndEvent($"{protocols.Count} protocol(s) were found");
+        logger.Info($"{protocols.Count} protocol(s) were found");
+        this.config = config;
+        this.logger = logger;
     }
 
-    public Protocol.Packet GetPacket(int id, string[] protocolversions, Bound bound, State state)
+    public Protocol.Packet? GetPacket(int id, string[] protocolversions, Bound bound, State state)
     {
         foreach (string pv in protocolversions)
         {
-            GetProtocolByVersion(pv).packets.First<Protocol.Packet>();
+            var protocol = GetProtocolByVersion(pv);
+            if (protocol is not null)
+            {
+                return protocol.packets.Where<Protocol.Packet>((packet) =>
+                    packet.id.Equals(id) &&
+                    packet.bound is not null && Enum.Parse(typeof(Bound), packet.bound).Equals(bound) &&
+                    packet.state is not null && Enum.Parse(typeof(State), packet.state).Equals(state)
+                ).First();
+            } else
+            {
+                throw new NullReferenceException($"Failed to find protocol '{pv}'");
+            }
         }
 
         return null;
@@ -50,7 +64,8 @@ public class PacketDatabase
         if (latest is not null)
         {
             return GetProtocolByIdentifier(latest);
-        } else
+        }
+        else
         {
             return protocols.First().Value;
         }
@@ -75,7 +90,7 @@ public class PacketDatabase
     public record Protocol
     {
 
-        public Packet[]? packets;
+        public Packet[] packets = Array.Empty<Packet>();
 
         public record Packet
         {

@@ -13,62 +13,94 @@ public class PacketListener
 
     // Dependencies
     private readonly IConfiguration config;
-    private readonly Logger logger;
+    protected readonly Logger logger;
 
     // Listener Data
-    private readonly IPAddress address;
-    private readonly int port;
+    private readonly CancellationTokenSource cancellation;
+    private CancellationTokenRegistration callback;
+    private readonly IPEndPoint address;
     private readonly TcpListener listener;
 
     // Protocol Data
-    private readonly string[] versions;
     private readonly PacketDatabase database;
+    private readonly string[] versions;
 
     // State
-    private bool running;
+    private bool running = false;
     private State state;
 
-    public PacketListener(IConfiguration config, Logger logger) {
+    public PacketListener(IConfiguration config, Logger logger, PacketDatabase database)
+    {
         this.config = config;
         this.logger = logger;
 
+        this.cancellation = new();
         string[] address = config.GetAddress().Split(":");
-        this.address = IPAddress.Parse(address[0]);
-        this.port = int.Parse(address[1]);
-        this.listener = new(this.address, this.port);
+        this.address = new(IPAddress.Parse(address[0]), int.Parse(address[1]));
+        this.listener = new(this.address);
 
+        this.database = database;
         this.versions = config.GetProtocolVersions();
-        this.database = new(config.GetPacketRootFile());
 
-        this.running = true;
         this.state = State.STATUS;
     }
 
-    public async Task<int> RunAsync()
+    public void Start()
     {
-        var task = new Task<int>(() =>
-        {
-            listener.Start();
-            while (running)
-            {
-                var sock = listener.AcceptSocket();
+        listener.Start();
+        this.callback = cancellation.Token.Register(listener.Stop);
+    }
 
-                try
+    public void Stop()
+    {
+        cancellation.Cancel();
+        callback.Unregister();
+    }
+
+    public async void Listen()
+    {
+        logger.Info($"Listening on '{address.Address}:{address.Port}'");
+        running = true;
+        while (!cancellation.IsCancellationRequested)
+        {
+            try
+            {
+                var sock = await listener.AcceptSocketAsync();
+                if (sock.Connected && !cancellation.IsCancellationRequested)
                 {
-                    // Read buffer
                     byte[] bytes = new byte[MAX_PACKET_SIZE];
-                    var len = sock.Receive(bytes);
+                    var len = await sock.ReceiveAsync(new ArraySegment<byte>(bytes), SocketFlags.None);
                     var buf = ByteBuf.WrapPacketBuffer(len, bytes);
 
-                    // Parse Packet
-                    int id = buf.ReadVarInt();
-                } catch (IndexOutOfRangeException e)
-                {
-                    throw new IndexOutOfRangeException($"Recieved packet was larger than maximum of '{MAX_PACKET_SIZE}' bytes", e);
+                    var id = buf.ReadVarInt();
+                    var packet = database.GetPacket(id, versions, Bound.CLIENT, state);
+                    if (packet is not null)
+                    {
+                        logger.Debug($"Recieved packet '{id}/{packet.name}' in {len} bytes");
+                        Handle(packet);
+                    } else
+                    {
+                        throw new NullReferenceException($"No packet with criteria [ID: '{id}' Versions: '{String.Join(", ", versions)}', Bound: 'CLIENT', State: '{state}']");
+                    }
                 }
             }
-            listener.Stop();
-            return 0;
-        });
+            catch (SocketException) when (cancellation.IsCancellationRequested)
+            {
+                logger.Debug("Stopping listener . . .");
+            }
+            catch (Exception ex)
+            {
+                logger.Fatal($"Listener failed: {ex}");
+            }
+        }
+        running = false;
+        logger.Info("Listener stopped");
     }
+
+    void Handle(PacketDatabase.Protocol.Packet packet)
+    {
+
+    }
+
+    public bool IsRunning() => running;
 }

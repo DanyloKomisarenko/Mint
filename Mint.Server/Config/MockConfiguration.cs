@@ -4,6 +4,11 @@ namespace Mint.Server.Config;
 
 public class MockConfiguration : IConfiguration
 {
+    public bool Debug()
+    {
+        return true;
+    }
+
     public string GetAddress()
     {
         return "127.0.0.1:25565";

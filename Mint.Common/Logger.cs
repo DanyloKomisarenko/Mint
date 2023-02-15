@@ -1,14 +1,26 @@
-﻿using System.Runtime.CompilerServices;
+﻿using Mint.Common.Config;
+using System.Runtime.CompilerServices;
 
 namespace Mint.Common;
 
 public class Logger
 {
+    private readonly IConfiguration configuration;
+
+    public Logger(IConfiguration configuration)
+    {
+        this.configuration = configuration;
+    }
+
     public void Info(string msg, [CallerMemberName] string caller = "") => Log(Level.INFO, msg, caller);
-    public void Debug(string msg, [CallerMemberName] string caller = "") => Log(Level.DEBUG, msg, caller);
     public void Warning(string msg, [CallerMemberName] string caller = "") => Log(Level.WARNING, msg, caller);
     public void Error(string msg, [CallerMemberName] string caller = "") => Log(Level.ERROR, msg, caller);
     public void Fatal(string msg, [CallerMemberName] string caller = "") => Log(Level.FATAL, msg, caller);
+
+    public void Debug(string msg, [CallerMemberName] string caller = "")
+    {
+        if (configuration.Debug()) Log(Level.DEBUG, msg, caller);
+    }
 
     public void Log(Level level, string msg, [CallerMemberName] string caller = "") => Log("", level, msg, caller);
 
@@ -17,16 +29,6 @@ public class Logger
         level.Init();
         Console.WriteLine($"{prefix}[{DateTime.Now:HH:mm:ss}] [{level.text}] [{caller}] {msg}");
         Console.ResetColor();
-    }
-
-    public void StartEvent(string msg)
-    {
-        Console.WriteLine($"{msg}");
-    }
-
-    public void EndEvent(string msg)
-    {
-        Console.WriteLine($"{msg}");
     }
 
     public record Level
