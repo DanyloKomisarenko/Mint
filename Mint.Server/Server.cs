@@ -10,8 +10,6 @@ public class Server
     private readonly Logger logger;
     private readonly PacketListener listener;
 
-    private readonly CancellationTokenSource cancellation = new();
-
     public Server(IConfiguration config, Logger logger, PacketListener listener)
     {
         this.config = config;
