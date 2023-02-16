@@ -77,7 +77,7 @@ public class PacketListener
                     if (packet is not null)
                     {
                         logger.Debug($"Recieved packet '{id}/{packet.name}' in {len} bytes");
-                        Handle(packet);
+                        Handle(packet, buf);
                     } else
                     {
                         throw new NullReferenceException($"No packet with criteria [ID: '{id}' Versions: '{String.Join(", ", versions)}', Bound: 'CLIENT', State: '{state}']");
@@ -97,9 +97,9 @@ public class PacketListener
         logger.Info("Listener stopped");
     }
 
-    void Handle(PacketDatabase.Protocol.Packet packet)
+    void Handle(PacketDatabase.Protocol.Packet packet, ByteBuf buf)
     {
-
+        List<object> values = database.ParseValues(packet, buf);
     }
 
     public bool IsRunning() => running;

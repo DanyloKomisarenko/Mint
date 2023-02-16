@@ -1,4 +1,5 @@
 ﻿using Mint.Common;
+using Mint.Common.Buffer;
 using Mint.Common.Config;
 using Mint.Common.Util;
 
@@ -6,6 +7,16 @@ namespace Mint.Protocol.Database;
 
 public class PacketDatabase
 {
+    private static readonly Dictionary<string, Func<ByteBuf, object>> VALUE_PARSER = new()
+    {
+        { "LONG", (buf) => buf.ReadLong() },
+        { "INT", (buf) => buf.ReadInt() },
+        { "BOOL", (buf) => buf.ReadBool() },
+        { "USHORT", (buf) => buf.ReadUShort() },
+        { "VARLONG", (buf) => buf.ReadVarLong() },
+        { "VARINT", (buf) => buf.ReadVarInt() }
+    };
+
     private readonly IConfiguration config;
     private readonly Logger logger;
     private readonly Root root;
@@ -35,6 +46,25 @@ public class PacketDatabase
         logger.Info($"{protocols.Count} protocol(s) were found");
         this.config = config;
         this.logger = logger;
+    }
+
+    public List<object> ParseValues(Protocol.Packet packet, ByteBuf buf)
+    {
+        List<object> o = new();
+        if (packet.parameters is not null)
+        {
+            foreach (var par in packet.parameters)
+            {
+                if (par.type is not null)
+                {
+                    o.Add(VALUE_PARSER[par.type].Invoke(buf));
+                } else
+                {
+                    throw new NullReferenceException($"Paremeter '{par.name} does not have a type'");
+                }
+            }
+        }
+        return o;
     }
 
     public Protocol.Packet? GetPacket(int id, string[] protocolversions, Bound bound, State state)
@@ -71,7 +101,6 @@ public class PacketDatabase
             return protocols.First().Value;
         }
     }
-
     public Protocol GetProtocolByIdentifier(string identifier) => protocols[protocols.Keys.First((key) => String.Compare(key.identifier, identifier) == 0)];
     public Protocol GetProtocolByVersion(string protocolVersion) => protocols[protocols.Keys.First((key) => String.Compare(key.protocolVersion, protocolVersion) == 0)];
     private Protocol GetProtocol(ProtocolInfo info) => protocols[info];
