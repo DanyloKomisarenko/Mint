@@ -205,14 +205,4 @@ public class ByteBuf : AbstractByteBuf
             throw new Exception($"Failed to write byte (readerIndex: {readerIndex}, writerIndex: {writerIndex}, capacity: {Capacity()})");
         }
     }
-
-    public static ByteBuf WrapPacketBuffer(int size, byte[] bytes)
-    {
-        ByteBuf buf = new(size);
-        for (int i = size - 1; i >= 0; i--)
-        {
-            buf.WriteByte(bytes[i]);
-        }
-        return buf;
-    }
 }

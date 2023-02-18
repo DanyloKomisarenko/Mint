@@ -23,7 +23,6 @@ public class Server
         {
             logger.Info("Starting server . . .");
             listener.Start();
-            listener.Listen();
             while (listener.IsRunning()) { }
             logger.Info("Server Stopped");
         }

@@ -34,7 +34,7 @@ public class Logger
     public record Level
     {
         public static readonly Level INFO = new("INFO", ConsoleColor.White, null);
-        public static readonly Level DEBUG = new("DEBUG", ConsoleColor.Green, null);
+        public static readonly Level DEBUG = new("DEBUG", ConsoleColor.DarkGray, null);
         public static readonly Level WARNING = new("WARNING", ConsoleColor.Yellow, null);
         public static readonly Level ERROR = new("ERROR", ConsoleColor.Red, null);
         public static readonly Level FATAL = new("FATAL", ConsoleColor.White, ConsoleColor.Red);
@@ -54,17 +54,6 @@ public class Logger
         {
             Console.ForegroundColor = foreground;
             if (background is not null) Console.BackgroundColor = (ConsoleColor)background;
-        }
-    }
-
-    public class Event
-    {
-        public string text = "";
-        public Event? parent;
-
-        public Event(string text)
-        {
-            this.text = text;
         }
     }
 }

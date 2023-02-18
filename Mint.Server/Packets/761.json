@@ -28,6 +28,9 @@
       "bound": "SERVER",
       "state": "STATUS",
       "desc": "Sent by the client to query the ping to the server.",
+      "handlers": [
+        "SendPingResponse"
+      ],
       "parameters": [
         {
           "name": "Payload",

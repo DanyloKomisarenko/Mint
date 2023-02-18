@@ -111,6 +111,10 @@ public abstract class AbstractByteBuf : IByteBuf
 
     public override string ToString()
     {
-        return $"ByteBuf=[readerIndex: {readerIndex}, writerIndex:{writerIndex}, capacity: {Capacity()}, bytes: {String.Join(", ", bytes)}]";
+        return $"ByteBuf=[readerIndex: " +
+            $"{readerIndex}, " +
+            $"writerIndex:{writerIndex}, " +
+            $"capacity: {Capacity()}, " +
+            $"bytes: <{String.Join(" ", bytes.Select(x => x.ToString("x")))}>]";
     }
 }

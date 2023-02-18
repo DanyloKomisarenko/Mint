@@ -14,7 +14,8 @@ public class PacketDatabase
         { "BOOL", (buf) => buf.ReadBool() },
         { "USHORT", (buf) => buf.ReadUShort() },
         { "VARLONG", (buf) => buf.ReadVarLong() },
-        { "VARINT", (buf) => buf.ReadVarInt() }
+        { "VARINT", (buf) => buf.ReadVarInt() },
+        { "STRING", (buf) => /*Not implemented*/ String.Empty }
     };
 
     private readonly IConfiguration config;
