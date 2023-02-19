@@ -9,6 +9,11 @@ public class StreamDecoder : ICurio<ByteBuf, NetworkStream>
 
     public ByteBuf Poke(NetworkStream input)
     {
-        throw new NotImplementedException();
+        var bytes = new byte[MAX_PACKET_SIZE];
+        int len = input.Read(bytes, 0, bytes.Length);
+        if (len is 0) throw new InvalidOperationException("Read 0 bytes");
+        var buf = new ByteBuf(len);
+        for (int i = 0; i < len; i++) buf.WriteByte(bytes[i]);
+        return buf;
     }
 }

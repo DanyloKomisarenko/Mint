@@ -7,6 +7,13 @@ public class PacketDecoder : ICurio<RealPacket, ByteBuf>
 {
     public RealPacket Poke(ByteBuf input)
     {
-        throw new NotImplementedException();
+        var len = input.ReadVarInt();
+        var id = input.ReadVarInt();
+
+        Console.WriteLine($"Len: {len}");
+        Console.WriteLine($"ID: {id}");
+        Console.WriteLine($"Buffer: {input}");
+
+        return null;
     }
 }

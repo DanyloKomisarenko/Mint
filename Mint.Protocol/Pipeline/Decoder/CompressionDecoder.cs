@@ -6,6 +6,7 @@ public class CompressionDecoder : ICurio<ByteBuf, ByteBuf>
 {
     public ByteBuf Poke(ByteBuf input)
     {
-        throw new NotImplementedException();
+        // Implement compression
+        return input;
     }
 }
