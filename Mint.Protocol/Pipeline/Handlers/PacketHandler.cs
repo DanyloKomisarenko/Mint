@@ -6,6 +6,6 @@ public class PacketHandler : ICurio<int, RealPacket>
 {
     public int Poke(RealPacket input)
     {
-        return 0;
+        return (int) Status.SUCCESS;
     }
 }

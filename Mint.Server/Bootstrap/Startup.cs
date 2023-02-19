@@ -5,6 +5,7 @@ using Mint.Server.Config;
 using Mint.Server;
 using Mint.Common;
 using Mint.Protocol.Database;
+using Mint.Protocol.Pipeline;
 
 IHost host = Host.CreateDefaultBuilder(args)
         .ConfigureServices((_, services) =>
@@ -15,7 +16,8 @@ IHost host = Host.CreateDefaultBuilder(args)
 
             services.AddSingleton<Server>()
                 .AddSingleton<PacketListener>()
-                .AddSingleton<PacketDatabase>();
+                .AddSingleton<PacketDatabase>()
+                .AddSingleton<Pipelines>();
         })
         .Build();
 

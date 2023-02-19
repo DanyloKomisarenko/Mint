@@ -22,10 +22,7 @@ public class PacketListener
     private CancellationTokenRegistration callback;
     private readonly IPEndPoint address;
     private readonly TcpListener listener;
-
-    private readonly ListenerPipeline encoders;
-    private readonly ListenerPipeline decoders;
-    private readonly ListenerPipeline handlers;
+    private readonly Pipelines pipelines;
 
     // Protocol Data
     private readonly PacketDatabase database;
@@ -33,7 +30,7 @@ public class PacketListener
 
     private bool running;
 
-    public PacketListener(IConfiguration config, Logger logger, PacketDatabase database)
+    public PacketListener(IConfiguration config, Logger logger, PacketDatabase database, Pipelines pipelines)
     {
         this.config = config;
         this.logger = logger;
@@ -42,23 +39,10 @@ public class PacketListener
         string[] address = config.GetAddress().Split(":");
         this.address = new(IPAddress.Parse(address[0]), int.Parse(address[1]));
         this.listener = new(this.address);
+        this.pipelines = pipelines;
 
         this.database = database;
         this.versions = config.GetProtocolVersions();
-
-        // Pipelines
-        this.encoders = new ListenerPipeline()
-            .Register(new PacketEncoder())
-            .Register(new CompressionEncoder())
-            .Register(new StreamEncoder());
-
-        this.decoders = new ListenerPipeline()
-            .Register(new StreamDecoder())
-            .Register(new CompressionDecoder())
-            .Register(new PacketDecoder());
-
-        this.handlers = new ListenerPipeline()
-            .Register(new PacketHandler());
     }
 
     public void Start()
@@ -96,7 +80,9 @@ public class PacketListener
             while (sock.Connected && !cancellation.IsCancellationRequested)
             {
                 using var stream = client.GetStream();
-                int result = handlers.Poke<int, RealPacket>(decoders.Poke<RealPacket, NetworkStream>(stream));
+                var decoded = pipelines.PokeDecoders<RealPacket, NetworkStream>(stream);
+                int result = pipelines.PokeHandlers<int, RealPacket>(decoded);
+                if (result is not 0) throw new Exception($"Failed to handle packet [Code: {result}]");
             }
         }
         catch (Exception ex)
