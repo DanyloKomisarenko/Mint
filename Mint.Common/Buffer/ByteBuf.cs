@@ -1,9 +1,13 @@
-﻿namespace Mint.Common.Buffer;
+﻿using System.Net.Sockets;
+using System.Text;
+
+namespace Mint.Common.Buffer;
 
 public class ByteBuf : AbstractByteBuf
 {
     private const int SEGMENT_BITS = 0x7F;
     private const int CONTINUE_BIT = 0x80;
+    private const int MAXIMUM_STRING_LENGTH = 32767;
 
     public ByteBuf() : this(0) { }
     public ByteBuf(int capacity) : this(new byte[capacity]) { }
@@ -126,19 +130,19 @@ public class ByteBuf : AbstractByteBuf
         return value;
     }
 
-    public void WriteVarLong(long _long)
+    public void WriteVarLong(long @long)
     {
         while (true)
         {
-            if ((_long & ~SEGMENT_BITS) == 0)
+            if ((@long & ~SEGMENT_BITS) == 0)
             {
-                WriteByte((byte)_long);
+                WriteByte((byte)@long);
                 return;
             }
 
-            WriteByte((byte)(_long & SEGMENT_BITS | CONTINUE_BIT));
+            WriteByte((byte)(@long & SEGMENT_BITS | CONTINUE_BIT));
 
-            _long >>= 7;
+            @long >>= 7;
         }
     }
 
@@ -163,19 +167,68 @@ public class ByteBuf : AbstractByteBuf
         return value;
     }
 
-    public void WriteVarInt(int _int)
+    public void WriteVarInt(int @int)
     {
         while (true)
         {
-            if ((_int & ~SEGMENT_BITS) == 0)
+            if ((@int & ~SEGMENT_BITS) == 0)
             {
-                WriteByte((byte)_int);
+                WriteByte((byte)@int);
                 return;
             }
 
-            WriteByte((byte)(_int & SEGMENT_BITS | CONTINUE_BIT));
+            WriteByte((byte)(@int & SEGMENT_BITS | CONTINUE_BIT));
 
-            _int >>= 7;
+            @int >>= 7;
+        }
+    }
+
+    public void WriteString(string @string)
+    {
+        WriteString(MAXIMUM_STRING_LENGTH, @string);
+    }
+
+    public string ReadString()
+    {
+        return ReadString(MAXIMUM_STRING_LENGTH);
+    }
+
+    public void WriteString(int max, string @string)
+    {
+        byte[] bytes = new UTF8Encoding().GetBytes(@string);
+        if (bytes.Length > max)
+        {
+            throw new Exception($"String too big (Is: '{bytes.Length}', Max: '{max}')");
+        }
+        else
+        {
+            WriteVarInt(bytes.Length);
+            WriteBytes(bytes);
+        }
+    }
+
+    public string ReadString(int max)
+    {
+        int length = ReadVarInt();
+        if (length > max * 4)
+        {
+            throw new Exception($"The recieved encoded string is longer than maximum allowed ({length} > {max * 4})");
+        }
+        else if (length < 0)
+        {
+            throw new Exception($"The recieved encoded string length is less than zero");
+        }
+        else
+        {
+            string s = new UTF8Encoding().GetString(ReadBytes(length), 0, length);
+            if (s.Length > MAXIMUM_STRING_LENGTH)
+            {
+                throw new Exception($"The received string length is longer than maximum allowed ({length} > {MAXIMUM_STRING_LENGTH})");
+            }
+            else
+            {
+                return s;
+            }
         }
     }
 

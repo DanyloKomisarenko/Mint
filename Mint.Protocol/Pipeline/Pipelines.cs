@@ -1,4 +1,7 @@
-﻿using Mint.Protocol.Pipeline.Decoder;
+﻿using Mint.Common;
+using Mint.Common.Config;
+using Mint.Protocol.Database;
+using Mint.Protocol.Pipeline.Decoder;
 using Mint.Protocol.Pipeline.Encoder;
 using Mint.Protocol.Pipeline.Handlers;
 
@@ -10,7 +13,7 @@ public class Pipelines
     private readonly ListenerPipeline decoders;
     private readonly ListenerPipeline handlers;
 
-    public Pipelines()
+    public Pipelines(IConfiguration config, Logger logger, PacketDatabase database)
     {
         // Pipelines
         this.encoders = new ListenerPipeline()
@@ -19,9 +22,9 @@ public class Pipelines
             .Register(new StreamEncoder());
 
         this.decoders = new ListenerPipeline()
-            .Register(new StreamDecoder())
+            .Register(new FrameDecoder())
             .Register(new CompressionDecoder())
-            .Register(new PacketDecoder());
+            .Register(new PacketDecoder(config, logger, database));
 
         this.handlers = new ListenerPipeline()
             .Register(new PacketHandler());

@@ -2,6 +2,36 @@
   "packets": [
     {
       "id": 0,
+      "name": "C00Handshake",
+      "bound": "SERVER",
+      "state": "HANDSHAKING",
+      "desc": "Sent by the client to establish a connection with the server.",
+      "parameters": [
+        {
+          "name": "Protocol Version",
+          "type": "VARINT",
+          "desc": "The client''s protocol version."
+        },
+        {
+          "name": "Server Address",
+          "type": "STRING",
+          "desc": "The address of the current server."
+        },
+        {
+          "name": "Server Port",
+          "type": "USHORT",
+          "desc": "The port of the current server."
+        },
+        {
+          "name": "Next State",
+          "type": "VARINT",
+          "desc": "The state to change to."
+        }
+      ]
+    },
+
+    {
+      "id": 0,
       "name": "C00StatusRequest",
       "bound": "SERVER",
       "state": "STATUS",
@@ -9,7 +39,7 @@
     },
     {
       "id": 0,
-      "name": "C00StatusResponse",
+      "name": "S00StatusResponse",
       "bound": "CLIENT",
       "state": "STATUS",
       "desc": "Sent by the server in response to a client query for the server lore.",
@@ -40,7 +70,7 @@
     },
     {
       "id": 1,
-      "name": "C01PingResponse",
+      "name": "S01PingResponse",
       "bound": "CLIENT",
       "state": "STATUS",
       "desc": "Sent by the server as a response to a query for the ping by the client.",

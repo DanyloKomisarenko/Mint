@@ -1,28 +1,30 @@
 ﻿using Mint.Common;
+using Mint.Common.Buffer;
 using Mint.Common.Config;
+using Mint.Common.Error;
 using Mint.Protocol.Database;
 using Mint.Protocol.Packet;
 using Mint.Protocol.Pipeline;
-using Mint.Protocol.Pipeline.Decoder;
-using Mint.Protocol.Pipeline.Encoder;
-using Mint.Protocol.Pipeline.Handlers;
 using System.Net;
 using System.Net.Sockets;
 
 namespace Mint.Protocol.Listener;
 
-public class PacketListener
+public class PacketListener : IDisposable
 {
+    private const int MAX_PACKET_SIZE = 2097151;
+
     // Dependencies
     private readonly IConfiguration config;
     private readonly Logger logger;
 
     // Listener Data
-    private  CancellationTokenSource cancellation;
+    private readonly CancellationTokenSource cancellation;
     private CancellationTokenRegistration callback;
     private readonly IPEndPoint address;
     private readonly TcpListener listener;
     private readonly Pipelines pipelines;
+    private readonly Dictionary<TcpClient, Connection> connections = new();
 
     // Protocol Data
     private readonly PacketDatabase database;
@@ -51,38 +53,48 @@ public class PacketListener
         logger.Info($"Listening on '{address.Address}:{address.Port}'");
         listener.Start();
         listener.BeginAcceptTcpClient(HandleClient, listener);
-        this.callback = cancellation.Token.Register(listener.Stop);
+        this.callback = cancellation.Token.Register(Dispose);
     }
 
-    public void Stop()
+    public void Dispose()
     {
         running = false;
+        listener.Stop();
         cancellation.Cancel();
         callback.Unregister();
     }
 
     public void HandleClient(IAsyncResult ar)
     {
+        // Connect to client
+        listener.BeginAcceptTcpClient(HandleClient, listener);
+        using var client = listener.EndAcceptTcpClient(ar);
+
         try
         {
-            logger.Debug("Opening connection . . .");
-            listener.BeginAcceptTcpClient(HandleClient, listener);
-            using var client = listener.EndAcceptTcpClient(ar);
-
-            var sock = client.Client;
+            // Prepare socket
+            using var sock = client.Client;
             if (sock is null) throw new NullReferenceException($"Failed to open socket");
-            if (sock.RemoteEndPoint is not IPEndPoint connectaddress) throw new NullReferenceException($"Failed to fetch ip");
-            logger.Info($"Succefully connected [IP: {connectaddress.Address}:{connectaddress.Port}]");
-
             sock.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, true);
-            logger.Debug("Enabled Keep-Alive");
 
+            // Register connection
+            connections[client] = new(client);
+
+            // Handle client
             while (sock.Connected && !cancellation.IsCancellationRequested)
             {
                 using var stream = client.GetStream();
-                var decoded = pipelines.PokeDecoders<RealPacket, NetworkStream>(stream);
-                int result = pipelines.PokeHandlers<int, RealPacket>(decoded);
-                if (result is not 0) throw new Exception($"Failed to handle packet [Code: {result}]");
+                byte[] bytes = new byte[MAX_PACKET_SIZE];
+                int len = stream.Read(bytes, 0, bytes.Length);
+                var buf = new ByteBuf(len);
+                for (int i = 0; i < len; i++) buf.WriteByte(bytes[i]);
+
+                while (stream.CanRead)
+                {
+                    var decoded = pipelines.PokeDecoders<RealPacket, ByteBuf>(buf);
+                    int result = pipelines.PokeHandlers<int, RealPacket>(decoded);
+                    if (result is not 0) throw new MintException("Failed to handle packet", new InvalidOperationException(), (Status)result);
+                }
             }
         }
         catch (Exception ex)
@@ -90,8 +102,9 @@ public class PacketListener
             logger.Fatal($"Listener failed: {ex}");
         }
 
-        logger.Debug("Connection closed");
+        connections.Remove(client);
     }
 
+    public Connection GetConnection(TcpClient client) => connections[client];
     public bool IsRunning() => running;
 }
