@@ -1,11 +1,9 @@
 namespace Mint.Protocol;
 
-/*
-* <summary>
-* The game state when a packet should be 
-* expected.
-* </summary>
-*/
+/// <summary>
+/// The game state when a packet should be 
+/// expected.
+/// </summary>
 public enum State {
     HANDSHAKING = 0,
     STATUS = 1,

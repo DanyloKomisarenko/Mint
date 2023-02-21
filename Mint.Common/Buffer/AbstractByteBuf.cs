@@ -35,12 +35,12 @@ public abstract class AbstractByteBuf : IByteBuf
         return writerIndex;
     }
 
-    /*
-    * <summary>
-    * Writes multple bytes to the buffer and increases
-    * the Writer Index accordingly.
-    * </summary>
-    */
+    ///
+    /// <summary>
+    /// Writes multple bytes to the buffer and increases
+    /// the Writer Index accordingly.
+    /// </summary>
+    ///
     public void WriteBytes(byte[] bytes)
     {
         for (int i = 0; i < bytes.Length; i++)
@@ -49,12 +49,12 @@ public abstract class AbstractByteBuf : IByteBuf
         }
     }
 
-    /*
-     * <summary>
-     * Reads multple bytes from the buffer and increases
-     * the Reader Index accordingly.
-     * </summary>
-     */
+    ///
+     /// <summary>
+     /// Reads multple bytes from the buffer and increases
+     /// the Reader Index accordingly.
+     /// </summary>
+     ///
     public byte[] ReadBytes(int len)
     {
         byte[] bytes = new byte[len];
@@ -65,45 +65,45 @@ public abstract class AbstractByteBuf : IByteBuf
         return bytes;
     }
 
-    /*
-     * <summary>
-     * Returns the amount of bytes that can be read
-     * from the buffer.
-     * </summary>
-     */
+    ///
+     /// <summary>
+     /// Returns the amount of bytes that can be read
+     /// from the buffer.
+     /// </summary>
+     ///
     public int ReadableBytes()
     {
         return writerIndex - readerIndex;
     }
 
-    /*
-     * <summary>
-     * Returns the amount of bytes that can be wrote
-     * to the buffer.
-     * </summary>
-     */
+    ///
+     /// <summary>
+     /// Returns the amount of bytes that can be wrote
+     /// to the buffer.
+     /// </summary>
+     ///
     public int WritableBytes()
     {
         return Capacity() - writerIndex;
     }
 
-    /*
-     * <summary>
-     * Returns whether a read is possible on the 
-     * buffer.
-     * </summary>
-     */
+    ///
+     /// <summary>
+     /// Returns whether a read is possible on the 
+     /// buffer.
+     /// </summary>
+     ///
     public bool CanRead()
     {
         return ReadableBytes() > 0;
     }
 
-    /*
-     * <summary>
-     * Returns whether a write is possible on the 
-     * buffer.
-     * </summary>
-     */
+    ///
+     /// <summary>
+     /// Returns whether a write is possible on the 
+     /// buffer.
+     /// </summary>
+     ///
     public bool CanWrite()
     {
         return WritableBytes() > 0;

@@ -4,6 +4,11 @@ using System.Net.Sockets;
 
 namespace Mint.Protocol.Listener;
 
+/// <summary>
+/// The <c>Connection</c> class represents the link between the server 
+/// and client. It is used for write operations and to hold
+/// the value of the state.
+/// </summary>
 public class Connection
 {
     public readonly PacketListener Parent;
@@ -36,16 +41,26 @@ public class Connection
         });
     }
 
+    /// <summary>
+    /// Switches from one <c>State</c> to another. Changing
+    /// the packets that can be sent and recieved.
+    /// </summary>
     public void ChangeState(State state)
     {
         Parent.Logger.Debug($"Changed protocol state to '{state}'");
         this.State = state;
     }
 
+    /// <summary>
+    /// Adds a <c>Packet</c> to a queue to be sent.
+    /// </summary>
     public void SendPacket(int id, Bound bound)
     {
         Parent.Database.GetPacket(id, Parent.Config.GetProtocolVersions(), bound, State);
     }
 
+    /// <summary>
+    /// Adds a <c>Packet</c> to a queue to be sent.
+    /// </summary>
     public void SendPacket(RealPacket packet) => PacketQueue.Enqueue(packet);
 }
