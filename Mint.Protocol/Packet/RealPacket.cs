@@ -2,6 +2,10 @@
 
 namespace Mint.Protocol.Packet;
 
+/// <summary>
+/// This class links a template from the database to a
+/// list of parameters.
+/// </summary>
 public class RealPacket
 {
     public RealPacket(PacketDatabase.Protocol.Packet packet)

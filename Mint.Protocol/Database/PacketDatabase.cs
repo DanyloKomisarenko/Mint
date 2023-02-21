@@ -5,6 +5,10 @@ using Mint.Common.Util;
 
 namespace Mint.Protocol.Database;
 
+/// <summary>
+/// This class reads a json root file and loads the 
+/// different protocols defined within it.
+/// </summary>
 public class PacketDatabase
 {
     private static readonly Dictionary<string, Func<ByteBuf, object>> VALUE_READER = new()

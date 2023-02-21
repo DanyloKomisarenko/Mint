@@ -10,12 +10,18 @@ using Mint.Protocol.Packet;
 
 namespace Mint.Protocol.Pipeline.Decoder;
 
+/// <summary>
+/// Using the frame decoded from previous decoders in the pipeline
+/// this class decodes the id of the packet and uses it to fetch
+/// the template from the database. Using this template it parses
+/// the rest of the buffer and returns an instance of a <c>RealPacket</c>.
+/// </summary>
 public class PacketDecoder : ICurio<RealPacket, ByteBuf>
 {
     private readonly IConfiguration config;
     private readonly Logger logger;
     private readonly PacketDatabase database;
-
+    
     public PacketDecoder(IConfiguration config, Logger logger, PacketDatabase database)
     {
         this.config = config;

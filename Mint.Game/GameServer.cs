@@ -6,6 +6,10 @@ using Mint.Protocol.Listener;
 
 namespace Mint.Game;
 
+/// <summary>
+/// This class contains all the game state information
+/// of the server.
+/// </summary>
 public class GameServer : IDisposable
 {
     private readonly Logger logger;

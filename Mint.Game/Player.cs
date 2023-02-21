@@ -2,6 +2,10 @@
 
 namespace Mint.Game;
 
+/// <summary>
+/// This class contains all the server 
+/// side player state information.
+/// </summary>
 public class Player
 {
     public Player(Guid uuid, string displayname, Connection connection)

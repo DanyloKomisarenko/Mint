@@ -5,6 +5,9 @@ namespace Mint.Protocol.Pipeline.Decoder;
 
 public class FrameDecoder : ICurio<ByteBuf, ByteBuf>
 {
+    /// <summary>
+    /// Splits the <c>ByteBuf</c> into multiple frames using the encoded data length.
+    /// </summary>
     public ByteBuf Poke(Connection connection, ByteBuf input)
     {
         int len = input.ReadVarInt();

@@ -3,10 +3,15 @@ using Mint.Protocol.Listener;
 
 namespace Mint.Protocol.Pipeline.Decoder;
 
+/// <summary>
+/// Using data provided from the buffer this class decompresses the 
+/// compressed data and passes to the <c>PacketDecoder</c>.
+/// </summary>
 public class CompressionDecoder : ICurio<ByteBuf, ByteBuf>
 {
     public ByteBuf Poke(Connection connection, ByteBuf input)
     {
+        var datalen = input.ReadVarInt();
         // Implement compression
         return input;
     }
