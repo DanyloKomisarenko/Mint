@@ -8,13 +8,15 @@ namespace Mint.Game;
 /// </summary>
 public class Player
 {
-    public Player(Guid uuid, string displayname, Connection connection)
+    public Player(bool hasuuid, Guid uuid, string displayname, Connection connection)
     {
+        HasUUID = hasuuid;
         UUID = uuid;
         Displayname = displayname;
         Connection = connection;
     }
 
+    public bool HasUUID { get; }
     public Guid UUID { get; }
     public string Displayname { get; }
     public Connection Connection { get; }
