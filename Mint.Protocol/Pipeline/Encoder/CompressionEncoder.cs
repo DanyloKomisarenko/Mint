@@ -1,11 +1,12 @@
 ﻿using Mint.Common.Buffer;
+using Mint.Protocol.Listener;
 
 namespace Mint.Protocol.Pipeline.Encoder;
 
 public class CompressionEncoder : ICurio<ByteBuf, ByteBuf>
 {
-    public ByteBuf Poke(ByteBuf input)
+    public ByteBuf Poke(Connection connection, ByteBuf input)
     {
-        throw new NotImplementedException();
+        return input;
     }
 }

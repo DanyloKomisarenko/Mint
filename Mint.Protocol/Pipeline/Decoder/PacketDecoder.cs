@@ -2,7 +2,10 @@
 using Mint.Common.Buffer;
 using Mint.Common.Config;
 using Mint.Common.Error;
+using Mint.Common.Event;
 using Mint.Protocol.Database;
+using Mint.Protocol.Events;
+using Mint.Protocol.Listener;
 using Mint.Protocol.Packet;
 
 namespace Mint.Protocol.Pipeline.Decoder;
@@ -20,10 +23,10 @@ public class PacketDecoder : ICurio<RealPacket, ByteBuf>
         this.database = database;
     }
 
-    public RealPacket Poke(ByteBuf input)
+    public RealPacket Poke(Connection connection, ByteBuf input)
     {
         var id = input.ReadVarInt();
-        var template = database.GetPacket(id, config.GetProtocolVersions(), Bound.SERVER, State.HANDSHAKING);
+        var template = database.GetPacket(id, config.GetProtocolVersions(), Bound.SERVER, connection.State);
         if (template != null)
         {
             // Decode Packet
@@ -36,6 +39,8 @@ public class PacketDecoder : ICurio<RealPacket, ByteBuf>
             // Handle Decoding exceptions
             if (input.ReadableBytes() > 0) 
                 throw new MintException($"'{input.ReadableBytes()}' extra bytes found during decoding", new InvalidOperationException(), Status.EXTRA_BYTES);
+
+            EventManager.Call(new PacketRecieveEvent(connection, packet));
 
             return packet;
         } else

@@ -8,6 +8,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\Mint.Game\Mint.Game.csproj" />
 		<ProjectReference Include="..\Mint.Protocol\Mint.Protocol.csproj" />
 	</ItemGroup>
 

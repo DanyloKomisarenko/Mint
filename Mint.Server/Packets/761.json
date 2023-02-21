@@ -5,6 +5,7 @@
       "name": "C00Handshake",
       "bound": "SERVER",
       "state": "HANDSHAKING",
+      "handlername":  "Handshake",
       "desc": "Sent by the client to establish a connection with the server.",
       "parameters": [
         {
@@ -35,6 +36,7 @@
       "name": "C00StatusRequest",
       "bound": "SERVER",
       "state": "STATUS",
+      "handlername": "StatusRequest",
       "desc": "Sent by the client to query the server lore."
     },
     {

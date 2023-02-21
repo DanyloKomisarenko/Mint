@@ -1,0 +1,17 @@
+﻿using Mint.Common.Buffer;
+using Mint.Common.Event;
+using Mint.Protocol.Packet;
+
+namespace Mint.Protocol.Events;
+
+public class PacketSendEvent : IEvent
+{
+    public PacketSendEvent(RealPacket input, ByteBuf actualbuf)
+    {
+        Input = input;
+        Actualbuf = actualbuf;
+    }
+
+    public RealPacket Input { get; }
+    public ByteBuf Actualbuf { get; }
+}

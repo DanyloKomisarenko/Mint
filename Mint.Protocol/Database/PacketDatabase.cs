@@ -7,7 +7,7 @@ namespace Mint.Protocol.Database;
 
 public class PacketDatabase
 {
-    private static readonly Dictionary<string, Func<ByteBuf, object>> VALUE_PARSER = new()
+    private static readonly Dictionary<string, Func<ByteBuf, object>> VALUE_READER = new()
     {
         { "LONG", (buf) => buf.ReadLong() },
         { "INT", (buf) => buf.ReadInt() },
@@ -58,7 +58,7 @@ public class PacketDatabase
             {
                 if (par.type is not null)
                 {
-                    o.Add(VALUE_PARSER[par.type].Invoke(buf));
+                    o.Add(VALUE_READER[par.type].Invoke(buf));
                 } else
                 {
                     throw new NullReferenceException($"Paremeter '{par.name} does not have a type'");
@@ -125,10 +125,11 @@ public class PacketDatabase
 
         public record Packet
         {
-            public int? id;
+            public int id = -1;
             public string? name;
             public string? bound;
             public string? state;
+            public string handlername = "";
             public string desc = "Packet is not documented yet.";
             public Parameter[]? parameters;
         }

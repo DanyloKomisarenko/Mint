@@ -1,15 +1,51 @@
-﻿using System.Net.Sockets;
+﻿using Mint.Common.Buffer;
+using Mint.Protocol.Packet;
+using System.Net.Sockets;
 
 namespace Mint.Protocol.Listener;
 
 public class Connection
 {
+    public readonly PacketListener Parent;
     public readonly TcpClient Client;
+    public readonly Queue<RealPacket> PacketQueue;
     public State State;
 
-    public Connection(TcpClient client)
+    public Connection(PacketListener parent, TcpClient client)
     {
+        this.Parent = parent;
         this.Client = client;
+        this.PacketQueue = new();
         this.State = State.HANDSHAKING;
+
+        Task.Run(() =>
+        {
+            while (parent.IsRunning())
+            {
+                if (PacketQueue.Count > 0)
+                {
+                    var packet = PacketQueue.Dequeue();
+                    var buf = Parent.Pipelines.PokeEncoders<ByteBuf, RealPacket>(this, packet);
+                    if (buf is not null)
+                    {
+                        byte[] bytes = buf.ReadBytes(buf.Capacity());
+                        client.Client.Send(bytes);
+                    }
+                }
+            }
+        });
     }
+
+    public void ChangeState(State state)
+    {
+        Parent.Logger.Debug($"Changed protocol state to '{state}'");
+        this.State = state;
+    }
+
+    public void SendPacket(int id, Bound bound)
+    {
+        Parent.Database.GetPacket(id, Parent.Config.GetProtocolVersions(), bound, State);
+    }
+
+    public void SendPacket(RealPacket packet) => PacketQueue.Enqueue(packet);
 }

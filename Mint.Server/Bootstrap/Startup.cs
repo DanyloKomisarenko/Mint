@@ -6,18 +6,29 @@ using Mint.Server;
 using Mint.Common;
 using Mint.Protocol.Database;
 using Mint.Protocol.Pipeline;
+using Mint.Server.Mock;
+using Mint.Game;
+using Mint.Game.Handler;
 
 IHost host = Host.CreateDefaultBuilder(args)
         .ConfigureServices((_, services) =>
         {
+            // Dependencies
             services
                 .AddSingleton<Mint.Common.Config.IConfiguration, MockConfiguration>()
                 .AddSingleton<Logger>();
 
-            services.AddSingleton<Server>()
+            // Game
+            services
+                .AddSingleton<GameServer>()
+                .AddSingleton<PacketHandlers>();
+
+            // Protocol
+            services
+                .AddSingleton<Server>()
                 .AddSingleton<PacketListener>()
                 .AddSingleton<PacketDatabase>()
-                .AddSingleton<Pipelines>();
+                .AddSingleton<IPipelines, MockPipelines>();
         })
         .Build();
 

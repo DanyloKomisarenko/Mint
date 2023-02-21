@@ -1,7 +1,6 @@
 ﻿using Mint.Common;
 using Mint.Common.Buffer;
 using Mint.Common.Config;
-using Mint.Common.Error;
 using Mint.Protocol.Database;
 using Mint.Protocol.Packet;
 using Mint.Protocol.Pipeline;
@@ -12,45 +11,46 @@ namespace Mint.Protocol.Listener;
 
 public class PacketListener : IDisposable
 {
-    private const int MAX_PACKET_SIZE = 2097151;
+    public const int MAX_PACKET_SIZE = 2097151;
 
     // Dependencies
-    private readonly IConfiguration config;
-    private readonly Logger logger;
+    public readonly IConfiguration Config;
+    public readonly Logger Logger;
 
     // Listener Data
     private readonly CancellationTokenSource cancellation;
     private CancellationTokenRegistration callback;
     private readonly IPEndPoint address;
     private readonly TcpListener listener;
-    private readonly Pipelines pipelines;
+    public readonly Pipelines Pipelines;
     private readonly Dictionary<TcpClient, Connection> connections = new();
 
     // Protocol Data
-    private readonly PacketDatabase database;
+    public readonly PacketDatabase Database;
     private readonly string[] versions;
 
     private bool running;
 
-    public PacketListener(IConfiguration config, Logger logger, PacketDatabase database, Pipelines pipelines)
+    public PacketListener(IConfiguration config, Logger logger, PacketDatabase database, IPipelines pipelines)
     {
-        this.config = config;
-        this.logger = logger;
+        this.Config = config;
+        this.Logger = logger;
 
         this.cancellation = new();
         string[] address = config.GetAddress().Split(":");
         this.address = new(IPAddress.Parse(address[0]), int.Parse(address[1]));
         this.listener = new(this.address);
-        this.pipelines = pipelines;
+        this.Pipelines = new();
+        pipelines.RegisterPipelines(this.Pipelines);
 
-        this.database = database;
+        this.Database = database;
         this.versions = config.GetProtocolVersions();
     }
 
     public void Start()
     {
         running = true;
-        logger.Info($"Listening on '{address.Address}:{address.Port}'");
+        Logger.Info($"Listening on '{address.Address}:{address.Port}'");
         listener.Start();
         listener.BeginAcceptTcpClient(HandleClient, listener);
         this.callback = cancellation.Token.Register(Dispose);
@@ -78,7 +78,8 @@ public class PacketListener : IDisposable
             sock.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, true);
 
             // Register connection
-            connections[client] = new(client);
+            var connection = new Connection(this, client);
+            connections[client] = connection;
 
             // Handle client
             while (sock.Connected && !cancellation.IsCancellationRequested)
@@ -89,17 +90,12 @@ public class PacketListener : IDisposable
                 var buf = new ByteBuf(len);
                 for (int i = 0; i < len; i++) buf.WriteByte(bytes[i]);
 
-                while (stream.CanRead)
-                {
-                    var decoded = pipelines.PokeDecoders<RealPacket, ByteBuf>(buf);
-                    int result = pipelines.PokeHandlers<int, RealPacket>(decoded);
-                    if (result is not 0) throw new MintException("Failed to handle packet", new InvalidOperationException(), (Status)result);
-                }
+                while (stream.CanRead) Pipelines.PokeDecoders<RealPacket, ByteBuf>(connection, buf);
             }
         }
         catch (Exception ex)
         {
-            logger.Fatal($"Listener failed: {ex}");
+            Logger.Fatal($"Listener failed: {ex}");
         }
 
         connections.Remove(client);

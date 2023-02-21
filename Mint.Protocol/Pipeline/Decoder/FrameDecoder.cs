@@ -1,10 +1,11 @@
 ﻿using Mint.Common.Buffer;
+using Mint.Protocol.Listener;
 
 namespace Mint.Protocol.Pipeline.Decoder;
 
 public class FrameDecoder : ICurio<ByteBuf, ByteBuf>
 {
-    public ByteBuf Poke(ByteBuf input)
+    public ByteBuf Poke(Connection connection, ByteBuf input)
     {
         int len = input.ReadVarInt();
         var buf = new ByteBuf(len);

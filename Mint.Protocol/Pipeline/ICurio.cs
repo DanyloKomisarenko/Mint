@@ -1,6 +1,8 @@
-﻿namespace Mint.Protocol.Pipeline;
+﻿using Mint.Protocol.Listener;
+
+namespace Mint.Protocol.Pipeline;
 
 public interface ICurio<O, I>
 {
-    O Poke(I input);
+    O Poke(Connection connection, I input);
 }
