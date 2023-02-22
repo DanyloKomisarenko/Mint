@@ -8,10 +8,10 @@ public class PacketSendEvent : IEvent
 {
     public PacketSendEvent(RealPacket input, ByteBuf actualbuf)
     {
-        Input = input;
-        Actualbuf = actualbuf;
+        Packet = input;
+        Buffer = actualbuf;
     }
 
-    public RealPacket Input { get; }
-    public ByteBuf Actualbuf { get; }
+    public RealPacket Packet { get; }
+    public ByteBuf Buffer { get; }
 }

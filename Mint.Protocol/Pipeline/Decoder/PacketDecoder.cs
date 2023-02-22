@@ -19,24 +19,23 @@ namespace Mint.Protocol.Pipeline.Decoder;
 public class PacketDecoder : ICurio<RealPacket, ByteBuf>
 {
     private readonly IConfiguration config;
-    private readonly Logger logger;
+    private readonly EventManager eventmanager;
     private readonly PacketDatabase database;
     
-    public PacketDecoder(IConfiguration config, Logger logger, PacketDatabase database)
+    public PacketDecoder(IConfiguration config, EventManager eventmanager, PacketDatabase database)
     {
         this.config = config;
-        this.logger = logger;
+        this.eventmanager = eventmanager;
         this.database = database;
     }
 
     public RealPacket Poke(Connection connection, ByteBuf input)
     {
         var id = input.ReadVarInt();
-        var template = database.GetPacket(id, config.GetProtocolVersions(), Bound.SERVER, connection.State);
+        var template = database.GetPacket(id, config.GetProtocolVersions(), Bound.SERVER, connection.GetState());
         if (template != null)
         {
             // Decode Packet
-            logger.Info($"Recieved packet '{id}/{template.name}' [Buffer: {input}]");
             var packet = new RealPacket(template)
             {
                 Parameters = database.ParseValues(template, input)
@@ -46,12 +45,12 @@ public class PacketDecoder : ICurio<RealPacket, ByteBuf>
             if (input.ReadableBytes() > 0) 
                 throw new MintException($"'{input.ReadableBytes()}' extra bytes found during decoding", new InvalidOperationException(), Status.EXTRA_BYTES);
 
-            EventManager.Call(new PacketRecieveEvent(connection, packet));
+            eventmanager.Call(new PacketRecieveEvent(connection, packet));
 
             return packet;
         } else
         {
-            throw new MintException($"Failed to find packet '{id}'", new NullReferenceException(), Status.UKNOWN_PACKET);
+            throw new MintException($"Failed to find packet '{id}'", new NullReferenceException(), Status.UNKNOWN_PACKET);
         }
     }
 }

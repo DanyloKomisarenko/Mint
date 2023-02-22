@@ -9,6 +9,7 @@ using Mint.Protocol.Pipeline;
 using Mint.Server.Mock;
 using Mint.Game;
 using Mint.Game.Handler;
+using Mint.Common.Event;
 
 IHost host = Host.CreateDefaultBuilder(args)
         .ConfigureServices((_, services) =>
@@ -16,7 +17,8 @@ IHost host = Host.CreateDefaultBuilder(args)
             // Dependencies
             services
                 .AddSingleton<Mint.Common.Config.IConfiguration, MockConfiguration>()
-                .AddSingleton<Logger>();
+                .AddSingleton<Logger>()
+                .AddSingleton<EventManager>();
 
             // Game
             services

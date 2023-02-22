@@ -11,8 +11,16 @@ public class CompressionDecoder : ICurio<ByteBuf, ByteBuf>
 {
     public ByteBuf Poke(Connection connection, ByteBuf input)
     {
-        var datalen = input.ReadVarInt();
-        // Implement compression
-        return input;
+        ByteBuf buf;
+        if (connection.ShouldCompress())
+        {
+            var datalen = input.ReadVarInt();
+            // Implement compression
+            buf = input;
+        } else
+        {
+            buf = input;
+        }
+        return buf;
     }
 }

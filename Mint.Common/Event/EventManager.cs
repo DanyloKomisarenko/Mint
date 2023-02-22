@@ -13,7 +13,7 @@ public class EventManager
 
     private static readonly Dictionary<Type, List<EventData>> _registeredMethods = new();
 
-    public static void Call(IEvent _event)
+    public void Call(IEvent _event)
     {
         foreach (List<EventData> methods in _registeredMethods.Values)
         {
@@ -34,7 +34,7 @@ public class EventManager
         }
     }
 
-    public static void RegisterListener(object obj)
+    public void RegisterListener(object obj)
     {        
         foreach (MethodBase method in obj.GetType().GetMethods())
         {
@@ -64,7 +64,7 @@ public class EventManager
         }
     }
 
-    public static void UnregisterListener(Type type)
+    public void UnregisterListener(Type type)
     {
         _registeredMethods.Remove(type);
     }

@@ -1,4 +1,5 @@
-﻿using Mint.Protocol;
+﻿using Mint.Common.Chat;
+using Mint.Protocol;
 using Mint.Protocol.Listener;
 using Mint.Protocol.Packet;
 
@@ -11,13 +12,17 @@ public class PacketHandlers
     public void RegisterHandlers()
     {
         // Handshaking
-        RegisterHandler("Handshake", (connection, packet) => connection.ChangeState((State)(int)packet.Parameters[3]));
+        RegisterHandler("Handshake", (connection, packet) =>
+            connection.ChangeState((State)(int)packet.Parameters[3]));
 
         // Status
-        RegisterHandler("StatusRequest", (connection, packet) => connection.SendPacket(0, Bound.CLIENT));
+        RegisterHandler("StatusRequest", (connection, packet) =>
+            connection.SendPacket(0, Bound.CLIENT, new object[] { new Chat() {
+
+            } }));
     }
 
-    public void Handle(string handlername, Connection connection, RealPacket packet) => 
+    public void Handle(string handlername, Connection connection, RealPacket packet) =>
         packethandlers[handlername].Invoker(connection, packet);
     private void RegisterHandler(string name, Action<Connection, RealPacket> handler) => packethandlers[name] = new(handler);
 

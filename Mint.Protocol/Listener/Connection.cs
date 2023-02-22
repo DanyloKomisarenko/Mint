@@ -1,6 +1,7 @@
 ﻿using Mint.Common.Buffer;
 using Mint.Protocol.Packet;
 using System.Net.Sockets;
+using static Mint.Protocol.Database.PacketDatabase.Protocol;
 
 namespace Mint.Protocol.Listener;
 
@@ -14,26 +15,29 @@ public class Connection
     public readonly PacketListener Parent;
     public readonly TcpClient Client;
     public readonly Queue<RealPacket> PacketQueue;
-    public State State;
+    private State state;
+    private bool compress;
 
     public Connection(PacketListener parent, TcpClient client)
     {
         this.Parent = parent;
         this.Client = client;
         this.PacketQueue = new();
-        this.State = State.HANDSHAKING;
+
+        this.state = State.HANDSHAKING;
+        this.compress = false;
 
         Task.Run(() =>
         {
             while (parent.IsRunning())
             {
-                if (PacketQueue.Count > 0)
+                while (PacketQueue.Count != 0)
                 {
                     var packet = PacketQueue.Dequeue();
                     var buf = Parent.Pipelines.PokeEncoders<ByteBuf, RealPacket>(this, packet);
                     if (buf is not null)
                     {
-                        byte[] bytes = buf.ReadBytes(buf.Capacity());
+                        byte[] bytes = buf.ReadAll();
                         client.Client.Send(bytes);
                     }
                 }
@@ -42,25 +46,37 @@ public class Connection
     }
 
     /// <summary>
-    /// Switches from one <c>State</c> to another. Changing
-    /// the packets that can be sent and recieved.
+    /// Widens and restricts the sendables and
+    /// recievable packets.
     /// </summary>
+    public State GetState() => state;
     public void ChangeState(State state)
     {
         Parent.Logger.Debug($"Changed protocol state to '{state}'");
-        this.State = state;
+        this.state = state;
     }
+
+    /// <summary>
+    /// Whether packets should be compressed and decompressed
+    /// during the send and recieve.
+    /// </summary>
+    public bool ShouldCompress() => compress;
+    public void SetCompress(bool compress) => this.compress = compress;
 
     /// <summary>
     /// Adds a <c>Packet</c> to a queue to be sent.
     /// </summary>
-    public void SendPacket(int id, Bound bound)
+    public void SendPacket(int id, Bound bound, IEnumerable<object> parameters)
     {
-        Parent.Database.GetPacket(id, Parent.Config.GetProtocolVersions(), bound, State);
+        var template = Parent.Database.GetPacket(id, Parent.Config.GetProtocolVersions(), bound, state);
+        if (template is not null)
+        {
+            var packet = new RealPacket(template)
+            {
+                Parameters = parameters.ToList()
+            };
+            PacketQueue.Enqueue(packet);
+        }
     }
-
-    /// <summary>
-    /// Adds a <c>Packet</c> to a queue to be sent.
-    /// </summary>
     public void SendPacket(RealPacket packet) => PacketQueue.Enqueue(packet);
 }

@@ -2,7 +2,6 @@
 using Mint.Common.Event;
 using Mint.Game.Handler;
 using Mint.Protocol.Events;
-using Mint.Protocol.Listener;
 
 namespace Mint.Game;
 
@@ -13,23 +12,30 @@ namespace Mint.Game;
 public class GameServer : IDisposable
 {
     private readonly Logger logger;
-    private readonly PacketListener listener;
+    private readonly EventManager eventmanager;
     private readonly PacketHandlers handlers;
     private readonly List<Player> connectedplayers = new();
 
-    public GameServer(Logger logger, PacketListener listener, PacketHandlers handlers)
+    public GameServer(Logger logger, EventManager eventmanager, PacketHandlers handlers)
     {
         this.logger = logger;
-        this.listener = listener;
+        this.eventmanager = eventmanager;
         this.handlers = handlers;
         handlers.RegisterHandlers();
 
-        EventManager.RegisterListener(this);
+        eventmanager.RegisterListener(this);
+    }
+
+    [EventTarget]
+    public void OnPacketSend(PacketSendEvent e)
+    {
+        logger.Info($"Sent packet '{e.Packet.Template.id}/{e.Packet.Template.name}' [Buffer: '{e.Buffer}', Parameters: '{String.Join(" ", e.Packet.Parameters)}']");
     }
 
     [EventTarget]
     public void OnPacketRecieve(PacketRecieveEvent e)
     {
+        logger.Info($"Recieved packet '{e.Packet.Template.id}/{e.Packet.Template.name}' [Parameters: '{String.Join(", ", e.Packet.Parameters)}']");
         var handlername = e.Packet.Template.handlername;
         if (handlername is not "") handlers.Handle(handlername, e.Connection, e.Packet);
     }
@@ -38,6 +44,6 @@ public class GameServer : IDisposable
 
     public void Dispose()
     {
-        EventManager.UnregisterListener(typeof(GameServer));
+        eventmanager.UnregisterListener(typeof(GameServer));
     }
 }

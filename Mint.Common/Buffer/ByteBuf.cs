@@ -9,6 +9,13 @@ public class ByteBuf : AbstractByteBuf
     private const int CONTINUE_BIT = 0x80;
     private const int MAXIMUM_STRING_LENGTH = 32767;
 
+    public ByteBuf(ByteBuf input)
+    {
+        this.bytes = new byte[input.Capacity()];
+        input.Flip();
+        for (int i = 0; i < input.Capacity(); i++) WriteByte(input.ReadByte());
+    }
+
     public ByteBuf() : this(0) { }
     public ByteBuf(int capacity) : this(new byte[capacity]) { }
     public ByteBuf(byte[] bytes) : this(bytes, 0, 0) { }
@@ -230,6 +237,18 @@ public class ByteBuf : AbstractByteBuf
                 return s;
             }
         }
+    }
+
+    public byte[] ReadAll()
+    {
+        byte[] bytes = new byte[Capacity()];
+        int index = ReaderIndex();
+        while (CanRead())
+        {
+            bytes[index] = ReadByte();
+            index++;
+        }
+        return bytes;
     }
 
     public override byte ReadByte()

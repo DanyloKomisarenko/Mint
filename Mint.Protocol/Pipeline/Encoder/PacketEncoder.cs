@@ -8,7 +8,7 @@ namespace Mint.Protocol.Pipeline.Encoder;
 
 public class PacketEncoder : ICurio<ByteBuf, RealPacket>
 {
-    private static readonly Dictionary<string, Action<ByteBuf, object>> VALUE_WRITER = new()
+    private readonly Dictionary<string, Action<ByteBuf, object>> VALUE_WRITER = new()
     {
         { "LONG", (buf, o) => buf.WriteLong((long)o) },
         { "INT", (buf, o) => buf.WriteInt((int)o) },
@@ -19,6 +19,13 @@ public class PacketEncoder : ICurio<ByteBuf, RealPacket>
         { "STRING", (buf, o) => buf.WriteString((string)o) }
     };
 
+    private readonly EventManager eventmanager;
+
+    public PacketEncoder(EventManager eventmanager)
+    {
+        this.eventmanager = eventmanager;
+    }
+
     public ByteBuf Poke(Connection connection, RealPacket input)
     {
         var maxbuf = new ByteBuf(PacketListener.MAX_PACKET_SIZE);
@@ -26,7 +33,7 @@ public class PacketEncoder : ICurio<ByteBuf, RealPacket>
         var pars = input.Template.parameters;
         if (pars is not null)
         {
-            for (int i = 0; i < pars.Count(); i++)
+            for (int i = 0; i < pars.Length; i++)
             {
                 var par = pars[i];
                 if (par.type is not null) VALUE_WRITER[par.type](maxbuf, input.Parameters[i]);
@@ -37,7 +44,7 @@ public class PacketEncoder : ICurio<ByteBuf, RealPacket>
         var actualbuf = new ByteBuf(maxbuf.WriterIndex());
         for (int i = 0; i < actualbuf.Capacity(); i++) actualbuf.WriteByte(maxbuf.ReadByte());
 
-        EventManager.Call(new PacketSendEvent(input, actualbuf));
+        eventmanager.Call(new PacketSendEvent(input, actualbuf));
 
         return actualbuf;
     }
