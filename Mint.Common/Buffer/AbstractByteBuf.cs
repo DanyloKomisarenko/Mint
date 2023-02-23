@@ -1,5 +1,9 @@
 ﻿namespace Mint.Common.Buffer;
 
+/// <summary>
+/// An implementation of the <c>IByteBuf</c> class that
+/// wraps an array of bytes.
+/// </summary>
 public abstract class AbstractByteBuf : IByteBuf
 {
     protected byte[] bytes = Array.Empty<byte>();
