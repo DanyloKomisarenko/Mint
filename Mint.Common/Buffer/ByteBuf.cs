@@ -219,18 +219,18 @@ public class ByteBuf : AbstractByteBuf
         int length = ReadVarInt();
         if (length > max * 4)
         {
-            throw new Exception($"The recieved encoded string is longer than maximum allowed ({length} > {max * 4})");
+            throw new InvalidOperationException($"The recieved encoded string is longer than maximum allowed ({length} > {max * 4})");
         }
         else if (length < 0)
         {
-            throw new Exception($"The recieved encoded string length is less than zero");
+            throw new InvalidOperationException($"The recieved encoded string length is less than zero");
         }
         else
         {
             string s = new UTF8Encoding().GetString(ReadBytes(length), 0, length);
             if (s.Length > MAXIMUM_STRING_LENGTH)
             {
-                throw new Exception($"The received string length is longer than maximum allowed ({length} > {MAXIMUM_STRING_LENGTH})");
+                throw new InvalidOperationException($"The received string length is longer than maximum allowed ({length} > {MAXIMUM_STRING_LENGTH})");
             }
             else
             {
@@ -239,16 +239,9 @@ public class ByteBuf : AbstractByteBuf
         }
     }
 
-    public byte[] ReadAll()
+    public byte[] ReadAllReadable()
     {
-        byte[] bytes = new byte[Capacity()];
-        int index = ReaderIndex();
-        while (CanRead())
-        {
-            bytes[index] = ReadByte();
-            index++;
-        }
-        return bytes;
+        return ReadBytes(ReadableBytes());
     }
 
     public override byte ReadByte()
@@ -261,7 +254,7 @@ public class ByteBuf : AbstractByteBuf
         }
         else
         {
-            throw new Exception($"Failed to read byte (readerIndex: {readerIndex}, writerIndex: {writerIndex}, capacity: {Capacity()})");
+            throw new IndexOutOfRangeException($"Failed to read byte (readerIndex: {readerIndex}, writerIndex: {writerIndex}, capacity: {Capacity()})");
         }
     }
 
@@ -274,7 +267,12 @@ public class ByteBuf : AbstractByteBuf
         }
         else
         {
-            throw new Exception($"Failed to write byte (readerIndex: {readerIndex}, writerIndex: {writerIndex}, capacity: {Capacity()})");
+            throw new IndexOutOfRangeException($"Failed to write byte (readerIndex: {readerIndex}, writerIndex: {writerIndex}, capacity: {Capacity()})");
         }
+    }
+
+    public ByteBuf Copy()
+    {
+        return new ByteBuf(bytes);
     }
 }

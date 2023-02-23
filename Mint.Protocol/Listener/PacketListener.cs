@@ -11,7 +11,7 @@ namespace Mint.Protocol.Listener;
 
 public class PacketListener : IDisposable
 {
-    public const int MAX_PACKET_SIZE = 2097151;
+    private const int MAX_PACKET_SIZE = 2097151;
 
     // Dependencies
     public readonly IConfiguration Config;
@@ -89,8 +89,9 @@ public class PacketListener : IDisposable
                 int len = stream.Read(bytes, 0, bytes.Length);
                 var buf = new ByteBuf(len);
                 for (int i = 0; i < len; i++) buf.WriteByte(bytes[i]);
+                buf.Flip();
 
-                while (stream.CanRead) Pipelines.PokeDecoders<RealPacket, ByteBuf>(connection, buf);
+                while (buf.CanRead()) Pipelines.PokeDecoders<RealPacket, ByteBuf>(connection, buf);
             }
         }
         catch (Exception ex)

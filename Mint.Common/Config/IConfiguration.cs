@@ -6,4 +6,5 @@ public interface IConfiguration
     string[] GetProtocolVersions();
     string GetAddress();
     bool Debug();
+    bool EnforcePacketFormat();
 }

@@ -9,6 +9,11 @@ public class MockConfiguration : IConfiguration
         return true;
     }
 
+    public bool EnforcePacketFormat()
+    {
+        return false;
+    }
+
     public string GetAddress()
     {
         return "127.0.0.1:25565";

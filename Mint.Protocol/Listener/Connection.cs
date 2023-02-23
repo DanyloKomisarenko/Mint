@@ -37,7 +37,7 @@ public class Connection
                     var buf = Parent.Pipelines.PokeEncoders<ByteBuf, RealPacket>(this, packet);
                     if (buf is not null)
                     {
-                        byte[] bytes = buf.ReadAll();
+                        byte[] bytes = buf.ReadAllReadable();
                         client.Client.Send(bytes);
                     }
                 }

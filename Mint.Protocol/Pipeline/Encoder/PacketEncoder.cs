@@ -8,6 +8,8 @@ namespace Mint.Protocol.Pipeline.Encoder;
 
 public class PacketEncoder : ICurio<ByteBuf, RealPacket>
 {
+    private const int MAX_PACKET_SIZE = 2097151;
+
     private readonly Dictionary<string, Action<ByteBuf, object>> VALUE_WRITER = new()
     {
         { "LONG", (buf, o) => buf.WriteLong((long)o) },
@@ -28,7 +30,7 @@ public class PacketEncoder : ICurio<ByteBuf, RealPacket>
 
     public ByteBuf Poke(Connection connection, RealPacket input)
     {
-        var maxbuf = new ByteBuf(PacketListener.MAX_PACKET_SIZE);
+        var maxbuf = new ByteBuf(MAX_PACKET_SIZE);
         maxbuf.WriteVarInt(input.Template.id);
         var pars = input.Template.parameters;
         if (pars is not null)

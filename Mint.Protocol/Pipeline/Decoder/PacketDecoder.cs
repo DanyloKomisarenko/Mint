@@ -1,5 +1,4 @@
-﻿using Mint.Common;
-using Mint.Common.Buffer;
+﻿using Mint.Common.Buffer;
 using Mint.Common.Config;
 using Mint.Common.Error;
 using Mint.Common.Event;
@@ -31,26 +30,36 @@ public class PacketDecoder : ICurio<RealPacket, ByteBuf>
 
     public RealPacket Poke(Connection connection, ByteBuf input)
     {
-        var id = input.ReadVarInt();
-        var template = database.GetPacket(id, config.GetProtocolVersions(), Bound.SERVER, connection.GetState());
-        if (template != null)
+        try
         {
-            // Decode Packet
-            var packet = new RealPacket(template)
+            Console.WriteLine($"Packet Buffer: {input}");
+            var id = input.ReadVarInt();
+            var template = database.GetPacket(id, config.GetProtocolVersions(), Bound.SERVER, connection.GetState());
+            if (template != null)
             {
-                Parameters = database.ParseValues(template, input)
-            };
+                // Decode Packet
+                var packet = new RealPacket(template)
+                {
+                    Parameters = database.ParseValues(template, input)
+                };
 
-            // Handle Decoding exceptions
-            if (input.ReadableBytes() > 0) 
-                throw new MintException($"'{input.ReadableBytes()}' extra bytes found during decoding", new InvalidOperationException(), Status.EXTRA_BYTES);
+                // Handle Decoding exceptions
+                if (input.ReadableBytes() > 0)
+                    throw new MintException(
+                        $"'{input.ReadableBytes()}' extra bytes found during decoding of '{id}/{template.name}'",
+                        new InvalidOperationException(),
+                        Status.EXTRA_BYTES);
 
-            eventmanager.Call(new PacketRecieveEvent(connection, packet));
-
-            return packet;
-        } else
+                eventmanager.Call(new PacketRecieveEvent(connection, packet));
+                return packet;
+            }
+            else
+            {
+                throw new MintException($"Failed to find packet '{id}'", new NullReferenceException(), Status.UNKNOWN_PACKET);
+            }
+        } catch (IndexOutOfRangeException e)
         {
-            throw new MintException($"Failed to find packet '{id}'", new NullReferenceException(), Status.UNKNOWN_PACKET);
+            throw new MintException("Failed to decode packet", e, Status.MISFORMATTED_PACKET);
         }
     }
 }
