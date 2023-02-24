@@ -16,12 +16,12 @@
         {
           "name": "Server Address",
           "type": "STRING",
-          "desc": "The address of the current server."
+          "desc": "The address of the client."
         },
         {
           "name": "Server Port",
           "type": "USHORT",
-          "desc": "The port of the current server."
+          "desc": "The port of the client."
         },
         {
           "name": "Next State",
